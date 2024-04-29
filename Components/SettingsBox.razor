@@ -1,0 +1,72 @@
+﻿<style>
+	.clickable {
+		cursor: pointer;
+	}
+</style>
+
+<Card Class="@CardClass" Style="width:30rem; position: fixed; right: 100px; bottom: 30px;"
+	  Color="CardColor.Primary">
+	<CardBody>
+		<div class="clickable close-button" style="height: 24px; width:27px;position: absolute; top:5px;right:8px;"
+			 @onclick="OnClickClose">
+			<Icon Name="IconName.XCircleFill" Color="IconColor.None" Size="IconSize.x4" />
+		</div>
+		<CardTitle Style="margin-bottom: 1em">Settings</CardTitle>
+		<div class="container">
+			<div class="row">
+				<div class="col-6">
+					List titles font weight:
+				</div>
+				<div class="col-sm">
+					<input type="radio" checked=@(FontWeightTitle == "normal")
+						   @onchange="@(async () => {await OnChangeUpdateFontTitle("normal");})" />
+					<label>Normal </label>
+				</div>
+				<div class="col-sm">
+					<input type="radio" checked=@(FontWeightTitle == "bold")
+						   @onchange="@(async () => {await OnChangeUpdateFontTitle("bold");})" />
+					<label>Bold </label>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-6">
+					List items font weight:
+				</div>
+				<div class="col-sm">
+					<input type="radio" checked=@(FontWeightItems == "normal")
+						   @onchange="@(async () => {await OnChangeUpdateFontItems("normal");})" />
+					<label>Normal </label>
+				</div>
+				<div class="col-sm">
+					<input type="radio" checked=@(FontWeightItems == "bold")
+						   @onchange="@(async () => {await OnChangeUpdateFontItems("bold");})" />
+					<label>Bold </label>
+				</div>
+			</div>
+		</div>
+	</CardBody>
+</Card>
+
+@code {
+	[Parameter]
+	public string CardClass { get; set; }
+
+	[Parameter]
+	public CardColor Color { get; set; }
+
+	[Parameter]
+	public string FontWeightTitle { get; set; }
+
+	[Parameter]
+	public string FontWeightItems { get; set; }
+
+	[Parameter]
+	public Func<string,Task> OnChangeUpdateFontTitle { get; set; }
+
+	[Parameter]
+	public Func<string, Task> OnChangeUpdateFontItems { get; set; }
+
+	[Parameter]
+	public EventCallback<MouseEventArgs> OnClickClose { get; set; }
+}

@@ -1,0 +1,27 @@
+﻿.clickable {
+    cursor: pointer;
+}
+
+.visible {
+    display: block;
+}
+
+.invisible {
+    display: none;
+}
+
+::deep input[type="radio"] {
+    cursor: pointer;
+}
+
+.gear-glow {
+    display: none;
+}
+
+.toggle-gear:hover + .gear-glow {
+    display: block;
+}
+
+::deep .close-button:hover {
+    filter: brightness(70%);
+}

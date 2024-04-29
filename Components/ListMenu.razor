@@ -1,0 +1,64 @@
+﻿<Card class="@CardClass"
+	  Style="@CardStyle">
+
+	<ul class="@ListClass">
+		<li class="list-group-item">
+			<div class="icon">
+				<Icon Name="IconName.Trash3Fill" Size="IconSize.x4" Color="IconColor.Danger"
+					  @onclick="@OnDeletionClick" />
+			</div>
+		</li>
+		<Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
+		@if (@Mode == "edit")
+		{
+			<li class="list-group-item">
+				<div class="icon">
+					<Icon Name="IconName.LockFill" Size="IconSize.x3" Color="IconColor.Secondary"
+						  @onclick="@OnEditClick" />
+				</div>
+			</li>
+		}
+		else
+		{
+			<li class="list-group-item">
+				<div class="icon">
+					<Icon Name="IconName.PencilFill" Size="IconSize.x3" Color="IconColor.Secondary"
+						  @onclick="@OnEditClick" />
+				</div>
+			</li>
+		}
+		<li class="list-group-item">
+			<div class="icon" style="color: dodgerblue;">
+				<Icon Name="IconName.Download" Size="IconSize.x4"
+						@onclick="@OnDownloadClick"/>
+			</div>
+		</li>
+	</ul>
+</Card>
+
+@code {
+	[Parameter]
+	public string CardClass { get; set; }
+
+	[Parameter]
+	public string ListClass { get; set; }
+
+	[Parameter]
+	public string CardStyle { get; set; }
+
+	[Parameter]
+	public string Mode { get; set; }
+
+	[Parameter]
+	public ConfirmDialog Dialog { get; set; }
+
+	[Parameter]
+	public EventCallback<MouseEventArgs> OnEditClick { get; set; }
+
+	[Parameter]
+	public EventCallback<MouseEventArgs> OnDeletionClick { get; set; }
+
+	[Parameter]
+	public EventCallback<MouseEventArgs> OnDownloadClick { get; set; }
+}

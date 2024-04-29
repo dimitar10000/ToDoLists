@@ -1,0 +1,44 @@
+[b-n3ioce1xpd] .list-item.completed {
+	cursor: default;
+	text-decoration: line-through red;
+}
+
+	[b-n3ioce1xpd] .list-item.completed:focus {
+		outline: none;
+		box-shadow: none;
+	}
+
+[b-n3ioce1xpd] .list-item.complete.empty-title {
+	cursor: default;
+}
+
+[b-n3ioce1xpd] .list-item.complete:hover {
+	cursor: pointer;
+	text-decoration:line-through red;
+}
+
+[b-n3ioce1xpd] .list-item.completed:hover {
+	cursor: default;
+}
+
+[b-n3ioce1xpd] .list-item.edit {
+	cursor: text;
+}
+
+[b-n3ioce1xpd] .list-item:focus {
+	outline: none;
+	box-shadow: inset 5px -12px 0px -10px gray;
+}
+
+ul[b-n3ioce1xpd] {
+	list-style-position: inside;
+	padding-left: 0;
+}
+
+[b-n3ioce1xpd] .white-background {
+	background-image: url(./images/white-background.png);
+}
+
+[b-n3ioce1xpd] .dark-theme-li::marker {
+	color: gray;
+}

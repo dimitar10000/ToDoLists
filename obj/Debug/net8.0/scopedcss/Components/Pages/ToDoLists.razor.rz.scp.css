@@ -1,0 +1,27 @@
+.clickable[b-1zdbzah2dq] {
+    cursor: pointer;
+}
+
+.visible[b-1zdbzah2dq] {
+    display: block;
+}
+
+.invisible[b-1zdbzah2dq] {
+    display: none;
+}
+
+[b-1zdbzah2dq] input[type="radio"] {
+    cursor: pointer;
+}
+
+.gear-glow[b-1zdbzah2dq] {
+    display: none;
+}
+
+.toggle-gear:hover + .gear-glow[b-1zdbzah2dq] {
+    display: block;
+}
+
+[b-1zdbzah2dq] .close-button:hover {
+    filter: brightness(70%);
+}

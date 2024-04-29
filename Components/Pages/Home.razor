@@ -1,0 +1,23 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+@if (CurrTheme == "dark")
+{
+	<div class="text-center mt-5">
+		<h2>This is the homepage.</h2>
+		<h3>You can choose from other pages in the menu on the left!</h3>
+	</div>
+}
+else
+{
+	<div class="text-center mt-5 text-secondary">
+		<h2>This is the homepage.</h2>
+		<h3>You can choose from other pages in the menu on the left!</h3>
+	</div>
+}
+
+@code {
+	[CascadingParameter]
+	public string CurrTheme { get; set; }
+}

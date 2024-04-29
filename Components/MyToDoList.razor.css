@@ -1,0 +1,44 @@
+::deep .list-item.completed {
+	cursor: default;
+	text-decoration: line-through red;
+}
+
+	::deep .list-item.completed:focus {
+		outline: none;
+		box-shadow: none;
+	}
+
+::deep .list-item.complete.empty-title {
+	cursor: default;
+}
+
+::deep .list-item.complete:hover {
+	cursor: pointer;
+	text-decoration:line-through red;
+}
+
+::deep .list-item.completed:hover {
+	cursor: default;
+}
+
+::deep .list-item.edit {
+	cursor: text;
+}
+
+::deep .list-item:focus {
+	outline: none;
+	box-shadow: inset 5px -12px 0px -10px gray;
+}
+
+ul {
+	list-style-position: inside;
+	padding-left: 0;
+}
+
+::deep .white-background {
+	background-image: url(./images/white-background.png);
+}
+
+::deep .dark-theme-li::marker {
+	color: gray;
+}

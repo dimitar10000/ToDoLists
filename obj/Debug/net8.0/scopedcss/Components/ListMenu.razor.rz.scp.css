@@ -1,0 +1,23 @@
+.icon[b-b4yw1ed8au] {
+    cursor: pointer;
+}
+
+.list-group.dark li[b-b4yw1ed8au] {
+    position: relative;
+    z-index: 0;
+    background: none;
+    overflow: hidden;
+}
+
+    .list-group.dark li[b-b4yw1ed8au]::after {
+        content: url(./images/white-background.png);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        z-index: -1;
+    }
+
+.list-group.light li[b-b4yw1ed8au] {
+    background-color: #3B3B3B;
+}

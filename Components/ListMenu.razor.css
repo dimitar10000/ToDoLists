@@ -1,0 +1,23 @@
+.icon {
+    cursor: pointer;
+}
+
+.list-group.dark li {
+    position: relative;
+    z-index: 0;
+    background: none;
+    overflow: hidden;
+}
+
+    .list-group.dark li::after {
+        content: url(./images/white-background.png);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        z-index: -1;
+    }
+
+.list-group.light li {
+    background-color: #3B3B3B;
+}

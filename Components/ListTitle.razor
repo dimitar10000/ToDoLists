@@ -1,0 +1,36 @@
+﻿<style>
+	@@import url("https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap");
+
+	.list-title:focus {
+		outline: none;
+		box-shadow: inset 5px -12px 0px -10px gray;
+	}
+
+</style>
+
+<input type="text"
+	   class="@Class list-title"
+	   value="@Value"
+	   style="font-weight: @FontWeight;
+		font-family: 'Gloria Hallelujah',Arial,sans-serif;
+		font-style: italic;
+		@Style"
+	   @onchange="OnChange" />
+
+@code {
+	[Parameter]
+	public string Class { get; set; }
+
+	[Parameter]
+	public string Value { get; set; }
+
+	[Parameter]
+	public string FontWeight { get; set; }
+
+	[Parameter]
+	public string Style { get; set; }
+
+	[Parameter]
+	public EventCallback<ChangeEventArgs> OnChange { get; set; }
+
+}

@@ -1,0 +1,212 @@
+﻿@inherits LayoutComponentBase
+
+	<div class="bb-page">
+
+		<Sidebar @ref="sidebar"
+				 Class="sidebar"
+				 IconName="IconName.GlobeAsiaAustralia"
+				 Title="My App"
+				 DataProvider="SidebarDataProvider"/>
+
+		<main>
+			<div class="bb-top-row px-4 d-flex justify-content-end">
+				<Dropdown>
+					<DropdownToggleButton>
+						@if (CurrTheme == "light")
+						{
+							<Icon Name="IconName.SunFill" Color="IconColor.Warning" Size="IconSize.x2" />
+						}
+						else
+						{
+							<Icon Name="IconName.MoonFill" Color="IconColor.Dark" Size="IconSize.x4" />
+						}
+					</DropdownToggleButton>
+					<DropdownMenu Position="DropdownMenuPosition.End">
+
+							<DropdownItem To="#" Type="ButtonType.Button"
+										  Class="d-flex justify-content-start align-items-center"
+										  @onclick="@(() => {dropdownItemType = "sun";
+														SwitchMode(dropdownItemType);})">
+								<div class="me-3">Light</div>
+								<Icon Name="IconName.SunFill" Color="IconColor.Warning" Size="IconSize.x2"
+									  Class="me-3" />
+								@if (CurrTheme == "light")
+								{
+									<Icon Name="IconName.Check2" Color="IconColor.Success" Size="IconSize.x4"
+										  Class="mt-2" />
+								}
+							</DropdownItem>
+
+							<DropdownItem To="#" Type="ButtonType.Button"
+										  Class="d-flex justify-content-start align-items-center"
+										  @onclick="@(() => {dropdownItemType = "moon";
+														SwitchMode(dropdownItemType);})">
+								<div class="me-4">Dark </div>
+								<Icon Name="IconName.MoonFill" Color="IconColor.Dark" Size="IconSize.x4"
+									  Class="me-3" />
+								@if (CurrTheme == "dark")
+								{
+									<Icon Name="IconName.Check2" Color="IconColor.Success" Size="IconSize.x4"
+										  Class="mt-2" />
+								}
+							</DropdownItem>
+					</DropdownMenu>
+				</Dropdown>
+			</div>
+
+			<CascadingValue Value="CurrTheme">
+			<article class="content px-4">
+				<div class="py-2">@Body</div>
+			</article>
+			</CascadingValue>
+		</main>
+
+	</div>
+
+@code {
+	Sidebar sidebar;
+	IEnumerable<NavItem> navItems;
+	bool applyPurpleStyle = false;
+
+	public string CurrTheme { get; set; } = "dark";
+	string dropdownItemType = "";
+
+	void SwitchMode(string type)
+	{
+		if(type == "sun" && CurrTheme == "light")
+		{
+			return;
+		}
+		if(type == "moon" && CurrTheme == "dark")
+		{
+			return;
+		}
+
+		if (CurrTheme == "light")
+		{
+			CurrTheme = "dark";
+		}
+		else
+		{
+			CurrTheme = "light";
+		}
+	}
+
+	private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
+	{
+		if (navItems is null)
+		{
+			navItems = GetNavItems();
+		}
+
+		return await Task.FromResult(request.ApplyTo(navItems));
+	}
+
+	private IEnumerable<NavItem> GetNavItems()
+	{
+		navItems = new List<NavItem>
+				   {
+					   new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
+					   new NavItem { Id = "2", Href = "/todos", IconName = IconName.ListCheck, Text = "To-do lists"},
+				   };
+
+		return navItems;
+	}
+
+	private void ToggleSidebarStyles() => applyPurpleStyle = !applyPurpleStyle;
+}
+
+@if (CurrTheme == "light")
+{
+	<style>
+		.bb-page {
+			background-image: url(./images/white-background.png);
+		}
+	</style>
+}
+else
+{
+	<style>
+		.bb-page {
+			background-color: black;
+		}
+	</style>
+}
+
+@if (applyPurpleStyle)
+{
+
+	<style>
+		:root {
+			--bb-sidebar-width: 270px;
+			--bb-sidebar-collapsed-width: 50px;
+			--bb-sidebar-background-color: rgba(234, 234, 234, 1);
+			--bb-sidebar-top-row-background-color: rgba(0,0,0,0.08);
+			--bb-sidebar-top-row-border-color: rgb(194,192,192);
+			--bb-sidebar-title-text-color: rgb(0,0,0);
+			--bb-sidebar-brand-icon-color: #6f42c1;
+			--bb-sidebar-brand-image-width: 24px;
+			--bb-sidebar-brand-image-height: 24px;
+			--bb-sidebar-title-badge-text-color: rgb(255,255,255);
+			--bb-sidebar-title-badge-background-color: rgba(25,135,84,var(--bs-bg-opacity,1));
+			--bb-sidebar-navbar-toggler-icon-color: rgb(0,0,0);
+			--bb-sidebar-navbar-toggler-background-color: rgba(0,0,0,0.08);
+			--bb-sidebar-content-border-color: rgb(194,192,192);
+			--bb-sidebar-nav-item-text-color: rgba(0,0,0,0.9);
+			--bb-sidebar-nav-item-text-active-color-rgb: 0,0,0;
+			--bb-sidebar-nav-item-text-hover-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.9);
+			--bb-sidebar-nav-item-text-active-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.9);
+			--bb-sidebar-nav-item-background-hover-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.08);
+			--bb-sidebar-nav-item-group-background-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.08);
+		}
+	</style>
+}
+else
+{
+	@if(CurrTheme == "dark")
+	{
+		<style>
+			:root {
+				--bb-sidebar-brand-icon-color: #0d6efd;
+			}
+		</style>
+	}
+	else
+	{
+		<style>
+			:root {
+				--bb-sidebar-brand-icon-color: azure;
+			}
+		</style>
+	}
+
+	<style>
+		:root {
+			--bb-sidebar-width: 270px;
+			--bb-sidebar-collapsed-width: 50px;
+			--bb-sidebar-background-color: rgba(17, 60, 252, 0.6);
+			--bb-sidebar-top-row-background-color: rgba(0,0,0,0);
+			--bb-sidebar-top-row-border-color: rgb(194,192,192);
+			--bb-sidebar-title-text-color: rgb(0,0,0);
+			--bb-sidebar-brand-image-width: 24px;
+			--bb-sidebar-brand-image-height: 24px;
+			--bb-sidebar-title-badge-text-color: rgb(255,255,255);
+			--bb-sidebar-title-badge-background-color: rgba(25,135,84,var(--bs-bg-opacity,1));
+			--bb-sidebar-navbar-toggler-icon-color: rgb(0,0,0);
+			--bb-sidebar-navbar-toggler-background-color: rgba(0,0,0,0.50);
+			--bb-sidebar-content-border-color: rgb(194,192,192);
+			--bb-sidebar-nav-item-text-color: rgba(0,0,0,0.9);
+			--bb-sidebar-nav-item-text-active-color-rgb: 0,0,0;
+			--bb-sidebar-nav-item-text-hover-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.9);
+			--bb-sidebar-nav-item-text-active-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.9);
+			--bb-sidebar-nav-item-background-hover-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.30);
+			--bb-sidebar-nav-item-group-background-color: rgba(var(--bb-sidebar-nav-item-text-active-color-rgb),0.08);
+		}
+	</style>
+}
+
+<div id="blazor-error-ui">
+	An unhandled error has occurred.
+	<a href="" class="reload">Reload</a>
+	<a class="dismiss">🗙</a>
+</div>

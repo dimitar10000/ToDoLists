@@ -1,0 +1,302 @@
+﻿@page "/todos"
+@attribute [StreamRendering(true)]
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@rendermode InteractiveServer
+
+<PageTitle> To-Do Lists</PageTitle>
+
+<style>
+	@@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@1,400..700&display=swap");
+
+	@@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@200..700&display=swap");
+
+	#title-dark {
+		font-family: 'Roboto Mono',Arial,sans-serif;
+		font-style: italic;
+		font-weight: 500;
+		font-size: 40px;
+		text-shadow: 1px 1px 2px #ffc107;
+	}
+
+	#title-light {
+		font-family: 'Roboto Mono',Arial,sans-serif;
+		font-style: italic;
+		font-weight: 500;
+		font-size: 40px;
+		color: #001489;
+		filter: brightness(60%);
+		text-shadow: 1px 1px 2px green;
+	}
+
+	#add-list-button, #no-lists, #loading-lists {
+		font-family: 'Roboto Condensed',Arial,sans-serif;
+		font-style: normal;
+		font-weigth: 700;
+	}
+
+	}
+</style>
+
+@if (CurrTheme == "dark")
+{
+	<p id="title-dark" class="h2 text-center text-danger mb-5">My To-Do Lists</p>
+}
+else
+{
+	<p id="title-light" class="h2 text-center mb-5">My To-Do Lists</p>
+}
+
+<div>
+	@if (CurrTheme == "dark")
+	{
+		<button id="add-list-button" class="btn btn-primary btn-lg fs-5 fw-semibold ms-5 mb-5" @onclick="AddNewListComponent"> Add New List </button>
+	}
+	else
+	{
+		<button id="add-list-button" class="btn btn-success btn-lg text-warning fs-5 fw-semibold ms-5 mb-5" @onclick="AddNewListComponent"> Add New List </button>
+	}
+</div>
+
+@if (lists == null)
+{
+
+	@if (CurrTheme == "dark")
+	{
+		<div class="d-flex flex-column align-items-center row-gap-4">
+			<div class="spinner-border text-primary" role="status">
+			</div>
+			<p id="loading-lists" class="fs-5 fw-semilight">
+				Lists are loading...
+			</p>
+		</div>
+	}
+	else
+	{
+		<div class="d-flex flex-column align-items-center row-gap-4">
+			<div class="spinner-border text-primary" role="status">
+			</div>
+			<p id="loading-lists" class="fs-5 text-secondary fw-semilight">
+				Lists are loading...
+			</p>
+		</div>
+	}
+}
+else
+{
+	<div id="lists-area" class="d-flex flex-row flex-wrap justify-content-evenly mt-2">
+		@if (lists.Count == 0)
+		{
+
+			if (CurrTheme == "dark")
+			{
+				<div id="no-lists" class="d-flex flex-column align-items-center">
+					<p class="fs-5 fw-semilight">
+					Looks like you still have 0 lists...
+				</p>
+
+				<img class="" src="./images/spider-web-inverted.png" height="100" width="100" />
+				</div>
+			}
+			else
+			{
+				<div id="no-lists" class="d-flex flex-column align-items-center">
+					<p class="fs-5 fw-semilight text-secondary">
+						Looks like you still have 0 lists...
+					</p>
+
+					<img class="" src="./images/spider-web.png" height="100" width="100" />
+				</div>
+			}
+		}
+		else
+		{
+
+			@for (int i = 0; i < lists.Count; i++)
+			{
+				<div>
+					<MyToDoList ListItems=@lists[i] Metadata=@metas[i] OnListChange="SyncComponentDataWithDB"
+								Settings="@((fontWeightTitle,fontWeightItems))" />
+				</div>
+			}
+		}
+	</div>
+}
+
+@if (CurrTheme == "dark")
+{
+	<div class="clickable" @onclick="ToggleSettings">
+		<Icon Name="IconName.GearFill" Size="IconSize.x1" style="position: fixed; right: 50px; bottom: 10px;z-index: 2"
+			  Class="toggle-gear" />
+		<div style="position: fixed; right: 50px; bottom: 20px; z-index:1; height: 40px; width: 40px;
+			filter: blur(10px);" class="gear-glow bg-secondary rounded-circle">
+		</div>
+	</div>
+
+	<div class="@displaySettings">
+		<SettingsBox CardClass="round text-dark-emphasis"
+					 FontWeightTitle="@fontWeightTitle" FontWeightItems="@fontWeightItems" Color="CardColor.Primary"
+					 OnClickClose="ToggleSettings" OnChangeUpdateFontTitle="UpdateFontWeightTitle"
+					 OnChangeUpdateFontItems="UpdateFontWeightItems" />
+	</div>
+}
+else
+{
+	<div class="clickable" @onclick="ToggleSettings">
+		<Icon Name="IconName.GearFill" Color="IconColor.Secondary" Size="IconSize.x1" style="position: fixed; right: 50px; bottom: 10px;"
+		Class="toggle-gear"/>
+		<div style="position: fixed; right: 50px; bottom: 20px; z-index:1; height: 40px; width: 40px;
+			filter: blur(12px);" class="gear-glow bg-secondary rounded-circle">
+		</div>
+	</div>
+
+	<div class="@displaySettings">
+		<SettingsBox CardClass="round text-white"
+					 FontWeightTitle="@fontWeightTitle" FontWeightItems="@fontWeightItems" Color="CardColor.Success"
+					 OnClickClose="ToggleSettings" OnChangeUpdateFontTitle="UpdateFontWeightTitle"
+					 OnChangeUpdateFontItems="UpdateFontWeightItems" />
+	</div>
+}
+
+@code {
+	List<ToDoListEntry> allEntries = new();
+	List<ToDoList>? lists = null;
+	List<ListMetadata> metas = new();
+
+	string fontWeightTitle = "";
+	string fontWeightItems = "";
+	string displaySettings = "invisible";
+
+	[CascadingParameter]
+	public string CurrTheme { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await SyncComponentDataWithDB();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await GetLocalStorageItems();
+	}
+
+	async Task GetLocalStorageItems()
+	{
+		try
+		{
+			bool initializedWeight1 = await LocalStorage.ContainKeyAsync("titleFont");
+			bool initializedWeight2 = await LocalStorage.ContainKeyAsync("itemsFont");
+
+			if (!initializedWeight1 && !initializedWeight2)
+			{
+				fontWeightTitle = "normal";
+				await LocalStorage.SetItemAsync("titleFont", fontWeightTitle);
+
+				fontWeightItems = "normal";
+				await LocalStorage.SetItemAsync("itemsFont", fontWeightItems);
+			}
+			else
+			{
+				fontWeightTitle = await LocalStorage.GetItemAsync<string>("titleFont");
+				fontWeightItems = await LocalStorage.GetItemAsync<string>("itemsFont");
+			}
+		}
+		catch (Exception)
+		{
+			Console.WriteLine("error reading local storage items");
+		}
+	}
+
+	async Task UpdateFontWeightTitle(string newValue)
+	{
+		fontWeightTitle = newValue;
+		await LocalStorage.SetItemAsync("titleFont", fontWeightTitle);
+		StateHasChanged();
+	}
+
+	async Task UpdateFontWeightItems(string newValue)
+	{
+		fontWeightItems = newValue;
+		await LocalStorage.SetItemAsync("itemsFont", fontWeightItems);
+		StateHasChanged();
+	}
+
+	async Task SyncComponentDataWithDB()
+	{
+		try
+		{
+			await GetEntries();
+			await GetMetadata();
+			GetLists();
+		}
+		catch (Exception exc)
+		{
+			Console.WriteLine(exc.Message);
+		}
+	}
+
+	ToDoList GetListById(int id)
+	{
+		ToDoList list = new ToDoList();
+
+		foreach (var entry in allEntries)
+		{
+			if (entry.Id == id)
+			{
+				list.AddItem(entry.ItemPosition, entry.ItemTitle, entry.ItemIsCompleted);
+			}
+		}
+
+		return list;
+	}
+
+	async Task GetEntries()
+	{
+		allEntries = await HttpClient.GetFromJsonAsync<List<ToDoListEntry>>(NavigationManager.BaseUri + "lists");
+	}
+
+	async Task GetMetadata()
+	{
+		metas = await HttpClient.GetFromJsonAsync<List<ListMetadata>>(NavigationManager.BaseUri + "lists/metadata");
+	}
+
+	void GetLists()
+	{
+		if (lists != null)
+		{
+			lists.Clear();
+		}
+		else
+		{
+			lists = new List<ToDoList>();
+		}
+
+		foreach (var meta in metas)
+		{
+			var list = GetListById(meta.Id);
+			lists.Add(list);
+		}
+	}
+
+	async Task AddNewListComponent()
+	{
+		var metadata = new ListMetadata { Title = "My to-do list", Created = DateTime.UtcNow };
+
+		await HttpClient.PostAsJsonAsync<ListMetadata>(NavigationManager.BaseUri + "lists/createList", metadata);
+
+		await SyncComponentDataWithDB();
+	}
+
+	void ToggleSettings()
+	{
+		if (displaySettings == "visible")
+		{
+			displaySettings = "invisible";
+		}
+		else
+		{
+			displaySettings = "visible";
+		}
+	}
+}

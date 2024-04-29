@@ -1,0 +1,370 @@
+﻿@rendermode InteractiveServer
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject ToastService ToastService
+@inject IJSRuntime JS
+
+<style>
+	@@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap");
+
+	.created {
+		font-family: 'Roboto Mono',Arial,sans-serif;
+		font-weight: 500;
+		font-size: 17px;
+	}
+
+</style>
+
+<script>
+	window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+		const arrayBuffer = await contentStreamReference.arrayBuffer();
+		const blob = new Blob([arrayBuffer]);
+		const url = URL.createObjectURL(blob);
+		const anchorElement = document.createElement('a');
+		anchorElement.href = url;
+		anchorElement.download = fileName ?? '';
+		anchorElement.click();
+		anchorElement.remove();
+		URL.revokeObjectURL(url);
+	}
+</script>
+
+<div class="d-flex flex-row mb-5 me-5">
+
+	@if (CurrTheme == "dark")
+	{
+		<div class="white-background border border-3 border-danger rounded p-3">
+
+			<ListTitle Class="white-background text-center text-secondary fs-5 mb-3 ms-4 border border-top-0 border-start-0 border-end-0"
+					   Value="@Metadata.Title" FontWeight="@Settings.fontWeightTitle"
+					   OnChange="UpdateTitle"/>
+
+			<ul class="mb-5">
+
+				@for (var i = 0; i < ListItems.Items.Count; i++)
+				{
+					var item = ListItems.Items[i];
+					var index = i;
+					var status = "";
+					var inputReadOnly = false;
+
+					if (item.IsCompleted)
+					{
+						status = "completed";
+						inputReadOnly = true;
+					}
+
+					if (mode == "complete")
+					{
+						inputReadOnly = true;
+					}
+
+					<li class="dark-theme-li">
+						@if (mode == "complete" && item.Title == "")
+						{
+							<Tooltip Title="Can't complete an empty item!"
+									 Placement="TooltipPlacement.Left" Color="TooltipColor.Info">
+
+								<ListItemInput @ref="InputElement" Id="@item.Id" Value="@item.Title"
+											   Class="white-background text-secondary list-item fs-5 empty-title border border-top-0 border-start-0 border-end-0"
+											   Mode="@mode" Readonly="@inputReadOnly" FontWeight="@Settings.fontWeightItems"
+											   OnInput="(args) => UpdateItemTitle(args,item)"
+											   OnKeypress="HandleEnterKey"
+											   OnKeydown="(args) => HandleBackspaceKey(args,index,item)" />
+								
+							</Tooltip>
+						}
+						else
+						{
+							<ListItemInput @ref="InputElement" Id="@item.Id" Value="@item.Title"
+										   Class="white-background text-secondary list-item fs-5 border border-top-0 border-start-0 border-end-0"
+										   Mode="@mode" Status="@status"
+										   Readonly="@inputReadOnly" FontWeight="@Settings.fontWeightItems"
+										   OnInput="(args) => UpdateItemTitle(args,item)"
+										   OnKeypress="HandleEnterKey"
+										   OnKeydown="(args) => HandleBackspaceKey(args,index,item)"
+										   OnClick="(args) => HandleClick(item)" />
+						}
+					</li>
+				}
+			</ul>
+
+			<label class="created text-secondary"> Created: @displayCreateDate </label>
+		</div>
+	}
+	else
+	{
+		<div class="border border-2 border-success rounded p-3"
+			 style="background-color: #3B3B3B; ">
+
+			<ListTitle Class="text-center text-white fs-5 mb-3 ms-4 border border-top-0 border-start-0 border-end-0"
+					   Value="@Metadata.Title" FontWeight="@Settings.fontWeightTitle"
+					   OnChange="UpdateTitle" Style="background-color: #3B3B3B;" />
+
+			<ul class="mb-5">
+
+				@for (var i = 0; i < ListItems.Items.Count; i++)
+				{
+					var item = ListItems.Items[i];
+					var index = i;
+					var status = "";
+					var inputReadOnly = false;
+
+					if (item.IsCompleted)
+					{
+						status = "completed";
+						inputReadOnly = true;
+					}
+
+					if (mode == "complete")
+					{
+						inputReadOnly = true;
+					}
+
+					<li>
+						@if (mode == "complete" && item.Title == "")
+						{
+
+							<Tooltip Title="Can't complete an empty item!"
+									 Placement="TooltipPlacement.Left" Color="TooltipColor.Info">
+								<ListItemInput @ref="InputElement" Id="@item.Id" Value="@item.Title"
+											   Class="list-item fs-5 empty-title border border-top-0 border-start-0 border-end-0"
+											   Mode="@mode" Readonly="@inputReadOnly" FontWeight="@Settings.fontWeightItems"
+											   Style="background-color: #3B3B3B;"
+											   OnInput="(args) => UpdateItemTitle(args,item)"
+											   OnKeypress="HandleEnterKey"
+											   OnKeydown="(args) => HandleBackspaceKey(args,index,item)" />
+							</Tooltip>
+						}
+						else
+						{
+							<ListItemInput @ref="InputElement" Id="@item.Id" Value="@item.Title"
+										   Class="list-item fs-5 border border-top-0 border-start-0 border-end-0"
+										   Mode="@mode" Status="@status" Style="background-color: #3B3B3B;"
+										   Readonly="@inputReadOnly" FontWeight="@Settings.fontWeightItems"
+										   OnInput="(args) => UpdateItemTitle(args,item)"
+										   OnKeypress="HandleEnterKey"
+										   OnKeydown="(args) => HandleBackspaceKey(args,index,item)"
+										   OnClick="(args) => HandleClick(item)" />
+						}
+					</li>
+				}
+			</ul>
+
+
+			<label class="created text-white"> Created: @displayCreateDate </label>
+
+		</div>
+	}
+
+	<ConfirmDialog @ref="@dialog" />
+	@if (CurrTheme == "dark")
+	{
+		<ListMenu CardClass="border border-2 border-danger ms-1 rounded"
+				  CardStyle="height: 171px;" ListClass="list-group dark"
+				  Mode="@mode" OnEditClick="SwitchListMode"
+				  OnDeletionClick="ShowConfirmationAsync"
+				  OnDownloadClick="DownloadList"/>
+	}
+	else
+	{
+		<ListMenu CardClass="border border-2 border-success ms-1 rounded"
+				  CardStyle="height: 171px;" ListClass="list-group light"
+				  Mode="@mode" OnEditClick="SwitchListMode"
+				  OnDeletionClick="ShowConfirmationAsync" />
+	}
+
+</div>
+
+@code {
+	string mode = "edit";
+
+	List<ListItemInput> inputElements = new List<ListItemInput>();
+
+	ListItemInput InputElement { get => default; set => inputElements.Add(value); }
+
+	[CascadingParameter]
+	public string CurrTheme { get; set; }
+
+	[Parameter]
+	public EventCallback OnListChange { get; set; }
+
+	[Parameter]
+	public ToDoList ListItems { get; set; }
+
+	[Parameter]
+	public ListMetadata Metadata { get; set; }
+
+	string displayCreateDate;
+
+	[Parameter]
+	public (string fontWeightTitle, string fontWeightItems) Settings { get; set; }
+
+	CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+
+	protected override async void OnInitialized()
+	{
+		displayCreateDate = @Metadata.Created.ToLocalTime().ToString("dd/MM/yyyy HH:mm", cultureInfo.DateTimeFormat);
+	}
+
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+		}
+		await base.OnAfterRenderAsync(firstRender);
+	}
+
+	void SwitchListMode()
+	{
+		if (mode == "edit")
+		{
+			mode = "complete";
+		}
+		else
+		{
+			mode = "edit";
+		}
+	}
+
+	async Task HandleClick(ToDoItem item)
+	{
+		if (mode == "complete")
+		{
+			await UpdateItemCompleted(item);
+		}
+	}
+
+	async Task UpdateTitle(ChangeEventArgs args)
+	{
+		int id = Metadata.Id;
+		string title = args.Value.ToString();
+		Metadata.Title = title;
+
+		await HttpClient.PatchAsJsonAsync<ListMetadata>(NavigationManager.BaseUri + "lists/updateTitle", new ListMetadata { Id = id, Title = title });
+	}
+
+	async Task UpdateItemTitle(ChangeEventArgs args, ToDoItem item)
+	{
+		int id = Metadata.Id;
+		string itemTitle = args.Value.ToString();
+
+		var itemCopy = item;
+		itemCopy.Title = itemTitle;
+
+		await HttpClient.PatchAsJsonAsync<ToDoItem>(NavigationManager.BaseUri + "lists/updateItem/" + id, itemCopy);
+		await OnListChange.InvokeAsync();
+	}
+
+	async Task UpdateItemCompleted(ToDoItem item)
+	{
+		int id = Metadata.Id;
+		item.IsCompleted = true;
+
+		await HttpClient.PatchAsJsonAsync<ToDoItem>(NavigationManager.BaseUri + "lists/updateItem/" + id, item);
+		await OnListChange.InvokeAsync();
+	}
+
+	async Task HandleBackspaceKey(KeyboardEventArgs args, int index, ToDoItem item)
+	{
+		if (args.Key == "Backspace" && index != 0 && item.Title == String.Empty)
+		{
+			await DeleteItem(item.Id);
+		}
+	}
+
+	async Task HandleEnterKey(KeyboardEventArgs args)
+	{
+		if (args.Key == "Enter")
+		{
+			await AddNewItem();
+		}
+	}
+
+	async Task AddNewItem()
+	{
+		int id = Metadata.Id;
+		ToDoItem item = new ToDoItem();
+
+		await HttpClient.PostAsJsonAsync<ToDoItem>(NavigationManager.BaseUri + "lists/addNewItem/" + id, item);
+		await OnListChange.InvokeAsync();
+
+		int lastElementIndex = inputElements.Count - 1;
+		await inputElements[lastElementIndex].Ref.FocusAsync();
+	}
+
+	public async Task DeleteItem(int itemId)
+	{
+		int listId = Metadata.Id;
+		await HttpClient.DeleteAsync(NavigationManager.BaseUri + "lists/deleteItem/" + listId + "/" + itemId);
+		await OnListChange.InvokeAsync();
+	}
+
+	async Task DeleteList()
+	{
+		int id = Metadata.Id;
+		await HttpClient.DeleteAsync(NavigationManager.BaseUri + "lists/deleteList/" + id);
+	}
+
+	private ConfirmDialog dialog = new ConfirmDialog();
+
+	private async Task ShowConfirmationAsync()
+	{
+		var confirmation = await dialog.ShowAsync(
+			title: "Are you sure you want to delete this list?",
+			message1: "This will delete it permanently from the system.",
+			message2: "Do you want to proceed?");
+
+		if (confirmation)
+		{
+			await DeleteList();
+			await OnListChange.InvokeAsync();
+			ToastService.Notify(new ToastMessage(ToastType.Success, $"List deleted successfully."));
+		}
+		else
+		{
+			ToastService.Notify(new ToastMessage(ToastType.Secondary, $"Delete action canceled."));
+		}
+	}
+
+	async Task CreateFile()
+	{
+		FileStream file = new FileStream("todolist.txt", FileMode.Create);
+		StreamWriter sw = new StreamWriter(file);
+
+		await sw.WriteLineAsync(Metadata.Title + "\n");
+
+		foreach (var item in ListItems.Items)
+		{
+			string completed = item.IsCompleted ? "done" : "";
+			await sw.WriteAsync(item.Title);
+
+			if (completed == "done")
+			{
+				await sw.WriteLineAsync(" => " + completed);
+			}
+			else
+			{
+				await sw.WriteLineAsync();
+			}
+		}
+
+		await sw.WriteAsync(displayCreateDate);
+		sw.Close();
+	}
+
+	async Task DownloadList()
+	{
+		await CreateFile();
+		string fileName = "todolist.txt";
+
+		FileStream file = new FileStream("todolist.txt", FileMode.Open);
+
+		using var streamRef = new DotNetStreamReference(file);
+		await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+
+		file.Close();
+	}
+}
+
